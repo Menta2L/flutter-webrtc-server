@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "common.names.fullname" . }}-configmap
+  namespace: {{ .Release.Namespace | quote }}
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/component: ruler
+    {{- if .Values.commonLabels }}
+    {{- include "common.tplvalues.render" ( dict "value" .Values.commonLabels "context" $ ) | nindent 4 }}
+    {{- end }}
+  {{- if .Values.commonAnnotations }}
+  annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
+  {{- end }}
+data:
+  config.ini: |-
+    [general]
+    domain={{ .Values.service.general.domain }}
+    cert=configs/certs/cert.pem
+    key=configs/certs/key.pem
+    bind=0.0.0.0
+    port={{ .Values.service.general.port }}
+    html_root=web
+
+    [turn]
+    public_ip={{ .Values.service.turn.publicIp }}
+    port={{ .Values.service.turn.port }}
+    realm={{ .Values.service.turn.realm }}
